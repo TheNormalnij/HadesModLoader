@@ -6,10 +6,12 @@
 #include "pch.h"
 #include "ModLuaDefs.h"
 
-#include <iostream>
+#include <filesystem>
 
 #include "HooksSystem.h"
 #include "lua.hpp"
+
+namespace fs = std::filesystem;
 
 const char *baseScript = R""""(
 local oldImport = Import
@@ -54,7 +56,35 @@ end
 
 )"""";
 
+static int ModImport(lua_State* L) {
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L, "Argument 1 must be a string");
+    }
+
+    auto relativePath = lua_tostring(L, 1);
+
+    lua_Debug debugInfo{};
+
+    if (!lua_getstack(L, 1, &debugInfo) || !lua_getinfo(L, "S", &debugInfo))
+        return 0;
+
+    const char *source = debugInfo.source;
+
+    if (source == nullptr || *source != '@')
+        return 0;
+
+    source++; // skip @
+
+    fs::path scriptPath{source};
+
+    auto scriptToLoad = (scriptPath.parent_path() / relativePath).string();
+
+    luaL_dofile(L, scriptToLoad.c_str());
+
+    return 0;
+}
 
 void ModLuaDefs::Load(lua_State *L) {
+    lua_register(L, "ModImport", ModImport);
     luaL_loadstring(L, baseScript);
 }
