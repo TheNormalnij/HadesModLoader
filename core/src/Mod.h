@@ -18,7 +18,7 @@ class Mod {
     void OnLuaCreated(lua_State *luaState);
 
   private:
-    using ModuleInit_t = void(__cdecl *)(IModApi*);
+    using ModuleInit_t = bool(__cdecl *)(IModApi*);
     using LuaCreatedApi_t = void(__cdecl *)(lua_State *);
       
     std::filesystem::path m_modPath;

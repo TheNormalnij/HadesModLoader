@@ -5,10 +5,9 @@
 
 #include "Mod.h"
 #include "LuaManager.h"
+#include "ModApi.h"
 
 namespace fs = std::filesystem;
-
-static IModApi gModApi{.version{MOD_API_VERSION}};
 
 bool Mod::Load() { 
     if (fs::is_regular_file(m_modPath / "init.lua"))
@@ -25,8 +24,13 @@ bool Mod::Load() {
 
     auto initFunction = (ModuleInit_t)(GetProcAddress(handle, "HadesModInit"));
 
+    bool status = true;
+
     if (initFunction)
-        initFunction(&gModApi);
+        status = initFunction(&gModApi);
+
+    if (!status)
+        return false;
 
     m_createdCallback = (LuaCreatedApi_t)(GetProcAddress(handle, "HadesModLuaCreated"));
 
@@ -34,9 +38,9 @@ bool Mod::Load() {
 }
 
 void Mod::OnLuaCreated(lua_State *luaState) {
+    if (m_createdCallback)
+        m_createdCallback(luaState);
+
     if (m_luaInit)
         LuaManager::LoadScriptFile(m_modPath / "init.lua");
-
-	if (m_createdCallback)
-        m_createdCallback(luaState);
 }

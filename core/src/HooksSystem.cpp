@@ -50,8 +50,10 @@ static void RemoveCreateFileHook() {
 
 HooksSystem::HooksSystem() { 
     HANDLE libraryHandle = LoadLibraryA("EngineWin64sv.dll");
+    m_GameDllOffset = reinterpret_cast<uint64_t>(libraryHandle);
+
     m_HookTable.Init();
-    m_HookTable.ApplyOffset(reinterpret_cast<uintptr_t>(libraryHandle));
+    m_HookTable.ApplyOffset(m_GameDllOffset);
 }
 
 void HooksSystem::SetLuaLoadCallback(std::function<void()> callback) {
@@ -60,9 +62,8 @@ void HooksSystem::SetLuaLoadCallback(std::function<void()> callback) {
 }
 
 HooksSystem *HooksSystem::Instance() { 
-    if (gHooksInstance)
-        return gHooksInstance;
-    else {
+    if (!gHooksInstance)
         gHooksInstance = new HooksSystem();
-    }
+
+    return gHooksInstance;
 }
