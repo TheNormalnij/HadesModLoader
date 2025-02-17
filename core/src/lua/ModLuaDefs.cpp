@@ -84,7 +84,24 @@ static int ModImport(lua_State* L) {
     return 0;
 }
 
+static int CreateMessageWindow(lua_State *L) {
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L, "Argument 1 must be a number");
+    }
+
+    if (!lua_isstring(L, 2)) {
+        return luaL_error(L, "Argument 2 must be a number");
+    }
+
+    auto strOne = lua_tostring(L, 1);
+    auto strTwo = lua_tostring(L, 2);
+
+    MessageBoxA(NULL, strTwo, strOne, MB_OK);
+    return 0;
+}
+
 void ModLuaDefs::Load(lua_State *L) {
     lua_register(L, "ModImport", ModImport);
+    lua_register(L, "CreateMessageWindow", CreateMessageWindow);
     luaL_loadstring(L, baseScript);
 }

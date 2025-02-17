@@ -1,7 +1,7 @@
-add_executable(Hades2ModLoader WIN32)
+add_executable(HadesModdedLauncher WIN32)
 
 target_sources(
-    Hades2ModLoader
+    HadesModdedLauncher
     PUBLIC
         src/main.cpp
 )
