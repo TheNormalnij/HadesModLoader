@@ -5,10 +5,22 @@
 
 #pragma once
 
-#include <filesystem>
 #include "include/HadesModApi.h"
+#include <filesystem>
 
 class lua_State;
+
+struct IModInterface {
+    using ModuleInit_t = bool(__cdecl *)(IModApi *);
+    using LuaCreatedApi_t = void(__cdecl *)(lua_State *);
+    using Start_t = bool(__cdecl *)();
+    using Stop_t = bool(__cdecl *)();
+
+    ModuleInit_t Init{};
+    LuaCreatedApi_t LuaCreated{};
+    Start_t Start{};
+    Stop_t Stop{};
+};
 
 class Mod {
   public:
@@ -17,12 +29,20 @@ class Mod {
     bool Load();
     void OnLuaCreated(lua_State *luaState);
 
+    bool Start();
+    bool Stop();
+
   private:
-    using ModuleInit_t = bool(__cdecl *)(IModApi*);
-    using LuaCreatedApi_t = void(__cdecl *)(lua_State *);
-      
+    bool LoadLib();
+
+  private:
+    bool m_hasLib;
+    bool m_libInited{};
+    bool m_enabled{};
     std::filesystem::path m_modPath;
+    std::string m_modName;
+    std::string m_libName;
     bool m_luaInit{};
 
-    LuaCreatedApi_t m_createdCallback{};
+    IModInterface m_interface{};
 };

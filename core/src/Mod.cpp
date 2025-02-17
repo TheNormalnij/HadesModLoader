@@ -6,41 +6,99 @@
 #include "Mod.h"
 #include "LuaManager.h"
 #include "ModApi.h"
+#include <tinyxml2.h>
 
 namespace fs = std::filesystem;
 
-bool Mod::Load() { 
-    if (fs::is_regular_file(m_modPath / "init.lua"))
-        m_luaInit = true;
+bool Mod::Load() {
+    namespace xml = tinyxml2;
+    xml::XMLDocument doc;
 
-    auto modulePath = m_modPath / "module.dll";
-    if (!fs::is_regular_file(modulePath))
-        return m_luaInit;
-
-    HMODULE handle = LoadLibraryW(modulePath.c_str());
-
-    if (!handle)
-        return true;
-
-    auto initFunction = (ModuleInit_t)(GetProcAddress(handle, "HadesModInit"));
-
-    bool status = true;
-
-    if (initFunction)
-        status = initFunction(&gModApi);
-
-    if (!status)
+    const auto metaPath = (m_modPath / "meta.xml").string();
+    if (doc.LoadFile(metaPath.c_str()) != xml::XML_SUCCESS)
         return false;
 
-    m_createdCallback = (LuaCreatedApi_t)(GetProcAddress(handle, "HadesModLuaCreated"));
+    auto *modElement = doc.FirstChildElement("mod");
+    if (!modElement) {
+        return false;
+    }
+
+    auto *nameElement = modElement->FirstChildElement("Name");
+    const char *name = nullptr;
+    if (nameElement && nameElement->QueryStringAttribute("value", &name) == xml::XML_SUCCESS) {
+        m_modName = name;
+    } else {
+        return false;
+    }
+
+    auto *libElement = modElement->FirstChildElement("Library");
+    const char *libNme = nullptr;
+    if (libElement && libElement->QueryStringAttribute("value", &libNme) == xml::XML_SUCCESS) {
+        m_libName = libNme;
+    } else {
+        return false;
+    }
 
     return true;
 }
 
 void Mod::OnLuaCreated(lua_State *luaState) {
-    if (m_createdCallback)
-        m_createdCallback(luaState);
+    if (m_interface.LuaCreated)
+        m_interface.LuaCreated(luaState);
 
-    if (m_luaInit)
-        LuaManager::LoadScriptFile(m_modPath / "init.lua");
+    const auto luaPath = m_modPath / "init.lua";
+    if (fs::is_regular_file(luaPath))
+        LuaManager::LoadScriptFile(luaPath);
+}
+
+bool Mod::Start() {
+    if (m_enabled)
+        return false;
+
+    if (m_libName.empty())
+        return false;
+
+    bool libStatus = m_libInited || LoadLib();
+
+    if (!libStatus)
+        return false;
+
+    if (m_interface.Start)
+        return m_interface.Start();
+
+    return true;
+}
+
+bool Mod::Stop() {
+    if (!m_enabled)
+        return true;
+
+    if (m_interface.Stop)
+        return m_interface.Stop();
+
+    return true;
+}
+
+bool Mod::LoadLib() {
+    auto libPath = m_modPath / m_libName;
+    HMODULE handle = LoadLibraryW(libPath.c_str());
+
+    if (!handle)
+        return true;
+
+    m_interface.Init = (IModInterface::ModuleInit_t)(GetProcAddress(handle, "HadesModInit"));
+
+    bool status = true;
+
+    if (m_interface.Init)
+        status = m_interface.Init(&gModApi);
+
+    if (!status)
+        return false;
+
+    m_interface.LuaCreated = (IModInterface::LuaCreatedApi_t)(GetProcAddress(handle, "HadesModLuaCreated"));
+    m_interface.Start = (IModInterface::Start_t)(GetProcAddress(handle, "HadesModStart"));
+    m_interface.Stop = (IModInterface::Stop_t)(GetProcAddress(handle, "HadesModStop"));
+
+    return true;
 }

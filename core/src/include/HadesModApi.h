@@ -32,8 +32,16 @@ class lua_State;
 // We call this function before the game loads "Main.lua"
 HADES_MOD_API void _cdecl HadesModLuaCreated(lua_State *luaState);
 
-// We call this function when load the mod
+// We call this function when load your library
 HADES_MOD_API bool _cdecl HadesModInit(const IModApi *modApi);
+
+// We call this function when a user enables the mods
+// Return false if your mod requests fresh start
+HADES_MOD_API bool _cdecl HadesModStart();
+
+// We call this function when a user disables the mods
+// Return false if your mod requests restart
+HADES_MOD_API bool _cdecl HadesModStop();
 }
 
 #endif //  HADESDLLEXPORT_API

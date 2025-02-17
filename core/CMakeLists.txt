@@ -15,5 +15,5 @@ target_sources(
     PUBLIC
         ${HADES_MOD_CORE_FILES} )
 
-target_link_libraries(HadesModCore PRIVATE libdetours liblua)
+target_link_libraries(HadesModCore PRIVATE libdetours liblua tinyxml2)
 target_precompile_headers(HadesModCore PRIVATE src/pch.h)

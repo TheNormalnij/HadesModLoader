@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(Hades2Coop VERSION 1.2 LANGUAGES CXX)
+project(HadesModLoader VERSION 1.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,6 +27,8 @@ endif()
 add_subdirectory(libs/lua-5.2.2)
 add_subdirectory(libs/libdetours)
 
+set(tinyxml2_BUILD_TESTING OFF)
+add_subdirectory(libs/tinyxml2)
+
 add_subdirectory(loader)
 add_subdirectory(core)
-

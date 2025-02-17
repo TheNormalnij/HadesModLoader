@@ -37,10 +37,12 @@ void ModManager::ScanMods() {
     namespace fs = std::filesystem;
     using path = fs::path;
 
-    if (!fs::is_directory("../Content/HeavenMods"))
+    if (!fs::is_directory("../Content/ModModules")) {
+        fs::create_directory("../Content/ModModules");
         return;
+    }
 
-    for (auto &modDir : fs::directory_iterator("../Content/HeavenMods")) {
+    for (auto &modDir : fs::directory_iterator("../Content/ModModules")) {
         if (!fs::is_directory(modDir))
             continue;
          
@@ -48,5 +50,9 @@ void ModManager::ScanMods() {
 
         if (mod->Load())
             m_Mods.emplace_back(std::move(mod));
+    }
+
+    for (auto &mod : m_Mods) {
+        mod->Start();
     }
 }
