@@ -90,7 +90,7 @@ static bool startSteamGame() {
     return true;
 }
 
-int main() {
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow) {
     if (!startSteamGame()) {
         MessageBoxA(nullptr, "Cannot start the game", "Fail", MB_OK);
         return 1;
