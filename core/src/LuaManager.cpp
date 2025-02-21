@@ -20,7 +20,16 @@ bool LuaManager::LoadScriptFile(const std::filesystem::path &path) {
     auto *luaState = GetLuaState();
 	auto strPath = path.string();
 
-	return luaL_dofile(luaState, strPath.c_str());
+    int top = lua_gettop(luaState);
+	bool state = luaL_dofile(luaState, strPath.c_str());
+
+    lua_settop(luaState, top);
+
+    return state;
+}
+
+int LuaManager::lua_pcallk(lua_State *L, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k) {
+    return ((int64_t(__fastcall *)(lua_State *, int, int, int, int, lua_CFunction))HooksSystem::Instance()->GetHoohTable().lua_pcallk)(L, nargs, nresults, errfunc, ctx, k);
 }
 
 lua_State *LuaManager::GetLuaState() {

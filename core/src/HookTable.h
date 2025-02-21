@@ -7,6 +7,7 @@
 
 struct HookTable {
     uintptr_t luaState;
+    uintptr_t lua_pcallk;
 
     void ApplyOffset(uintptr_t offset);
     void Init();

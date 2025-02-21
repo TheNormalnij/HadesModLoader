@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #include "HooksSystem.h"
+#include "LuaManager.h"
 #include "lua.hpp"
 
 namespace fs = std::filesystem;
@@ -63,7 +64,7 @@ int ModRequire(lua_State *L) {
     if (fileLoadStatus != LUA_OK)
         return luaL_error(L, "Unknown error");
 
-    lua_call(L, 0, 1);
+    LuaManager::lua_pcallk(L, 0, 1, 0, 0, 0);
 
     if (!lua_isnil(L, -1))        /* non-nil return? */
         lua_setfield(L, 2, relativePathAsString.c_str()); /* _LOADED[name] = returned value */
