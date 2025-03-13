@@ -1,6 +1,6 @@
 [submodule "libs/libdetours/Detours"]
 	path = libs/libdetours/Detours
 	url = https://github.com/microsoft/Detours.git
-[submodule "libs/tinyxml2"]
-	path = libs/tinyxml2
-	url = https://github.com/leethomason/tinyxml2.git
+[submodule "sjson"]
+	path = libs/sjson
+	url = git@github.com:nfrechette/sjson-cpp.git

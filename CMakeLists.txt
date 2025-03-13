@@ -27,8 +27,5 @@ endif()
 add_subdirectory(libs/lua-5.2.2)
 add_subdirectory(libs/libdetours)
 
-set(tinyxml2_BUILD_TESTING OFF)
-add_subdirectory(libs/tinyxml2)
-
 add_subdirectory(loader)
 add_subdirectory(core)

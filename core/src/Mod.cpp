@@ -6,38 +6,42 @@
 #include "Mod.h"
 #include "LuaManager.h"
 #include "ModApi.h"
-#include <tinyxml2.h>
+#include <sjson/parser.h>
+#include <fstream>
 
 namespace fs = std::filesystem;
 
 bool Mod::Load() {
-    namespace xml = tinyxml2;
-    xml::XMLDocument doc;
+    using namespace sjson;
+    const auto metaPath = m_modPath / "meta.sjson";
 
-    const auto metaPath = (m_modPath / "meta.xml").string();
-    if (doc.LoadFile(metaPath.c_str()) != xml::XML_SUCCESS)
+    std::ifstream file(metaPath);
+
+    if (!file.is_open())
         return false;
 
-    auto *modElement = doc.FirstChildElement("mod");
-    if (!modElement) {
-        return false;
-    }
+    std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
 
-    auto *nameElement = modElement->FirstChildElement("Name");
-    const char *name = nullptr;
-    if (nameElement && nameElement->QueryStringAttribute("value", &name) == xml::XML_SUCCESS) {
-        m_modName = name;
-    } else {
-        return false;
-    }
+    Parser parser{buffer.data(), buffer.size()};
 
-    auto *libElement = modElement->FirstChildElement("Library");
-    const char *libNme = nullptr;
-    if (libElement && libElement->QueryStringAttribute("value", &libNme) == xml::XML_SUCCESS) {
-        m_libName = libNme;
-    } else {
+    if (!parser.is_valid())
         return false;
-    }
+
+    if (!parser.object_begins())
+        return false;
+
+    StringView modName;
+    if (!parser.read("Name", modName))
+        return false;
+
+    m_modName = {modName.c_str(), modName.size()};
+
+    StringView modLib;
+    if (parser.read("Library", modLib))
+        m_libName = {modLib.c_str(), modLib.size()};
+
+    parser.object_ends();
 
     return true;
 }
