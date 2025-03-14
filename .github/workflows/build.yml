@@ -12,6 +12,9 @@ jobs:
             arch: ["x64"]
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: 'true'
+
     - name: Compile with MSVC for Windows
       run: |
         cmake -A ${{ matrix.arch }} . -B build_msvc
