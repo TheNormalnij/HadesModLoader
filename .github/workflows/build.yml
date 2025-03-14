@@ -25,5 +25,5 @@ jobs:
       with:
         name: Windows_${{ matrix.build_type }}_${{ matrix.arch }}
         path: |
-          ${{ github.workspace }}\build_msvc\${{ matrix.build_type }}\HadesModCore.dll
-          ${{ github.workspace }}\build_msvc\${{ matrix.build_type }}\HadesModdedLauncher.exe
+          ${{ github.workspace }}\bin\HadesModCore.dll
+          ${{ github.workspace }}\bin\HadesModdedLauncher.exe
