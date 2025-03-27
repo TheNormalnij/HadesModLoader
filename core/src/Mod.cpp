@@ -52,7 +52,7 @@ void Mod::OnLuaCreated(lua_State *luaState) {
 
     const auto luaPath = m_modPath / "init.lua";
     if (fs::is_regular_file(luaPath))
-        LuaManager::LoadScriptFile(luaPath);
+        LuaManager::DoScriptFile(luaPath);
 }
 
 bool Mod::Start() {

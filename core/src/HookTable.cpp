@@ -16,4 +16,6 @@ void HookTable::ApplyOffset(uintptr_t offset) {
 void HookTable::Init() {
     luaState = 0x6D82C0;
     lua_pcallk = 0x3A6140;
+    luaL_loadbufferx = 0x3A8DB0;
+    ScriptManager_Load_path = 0x27F7D9;
 }

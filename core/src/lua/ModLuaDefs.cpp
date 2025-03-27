@@ -32,14 +32,10 @@ int ModRequire(lua_State *L) {
     fs::path scriptPath{source};
     scriptPath = scriptPath.parent_path() / scriptRelativePath;
 
-    auto gamePath = fs::current_path().parent_path();
-    auto relativePath = scriptPath.lexically_relative(gamePath).lexically_normal();
-    auto relativePathAsString = relativePath.string();
+    auto relativePathAsString = (scriptPath.lexically_normal()).string();
 
     if (relativePathAsString.starts_with(".."))
         return luaL_error(L, "Cannot go outside of the game folder");
-
-    auto scriptToLoad = (gamePath / relativePath).string();
 
     lua_settop(L, 1); 
     luaL_getsubtable(L, LUA_REGISTRYINDEX, "_LOADED_SUBMODULES");
@@ -50,21 +46,15 @@ int ModRequire(lua_State *L) {
 
     lua_pop(L, 1); /* remove 'getfield' result */
 
-    int fileLoadStatus = luaL_loadfilex(L, scriptToLoad.c_str(), 0);
+    bool fileLoadStatus = LuaManager::LoadScriptFile(fs::current_path().parent_path() / scriptPath);
 
-    if (fileLoadStatus == LUA_ERRGCMM)
-        return luaL_error(L, "GC error");
+    if (!fileLoadStatus)
+        return luaL_error(L, "Cannot load file");
 
-    if (fileLoadStatus == LUA_ERRMEM)
-        return luaL_error(L, "Out of memory");
+    int runStatus = LuaManager::lua_pcallk(L, 0, 1, 0, 0, 0);
 
-    if (fileLoadStatus == LUA_ERRSYNTAX)
-        return luaL_error(L, "Syntax error");
-
-    if (fileLoadStatus != LUA_OK)
-        return luaL_error(L, "Unknown error");
-
-    LuaManager::lua_pcallk(L, 0, 1, 0, 0, 0);
+    if (runStatus != LUA_OK)
+        return luaL_error(L, "Runtime error");
 
     if (!lua_isnil(L, -1))        /* non-nil return? */
         lua_setfield(L, 2, relativePathAsString.c_str()); /* _LOADED[name] = returned value */

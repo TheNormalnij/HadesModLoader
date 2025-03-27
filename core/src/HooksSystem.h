@@ -17,6 +17,7 @@ class HooksSystem {
 
   private:
     HooksSystem();
+    void PathBufferNames();
 
   private:
     HookTable m_HookTable{};
