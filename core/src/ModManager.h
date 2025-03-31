@@ -19,6 +19,7 @@ class ModManager {
   private:
     void OnLuaCreated();
     void ScanMods();
+    void SortMods();
 
   private:
     std::vector<std::unique_ptr<Mod>> m_Mods;

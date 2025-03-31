@@ -41,6 +41,9 @@ bool Mod::Load() {
     if (parser.read("Library", modLib))
         m_libName = {modLib.c_str(), modLib.size()};
 
+    if (!parser.read("Priority", m_priority))
+        m_priority = 0;
+
     parser.object_ends();
 
     return true;

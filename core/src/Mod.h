@@ -32,17 +32,20 @@ class Mod {
     bool Start();
     bool Stop();
 
+    int64_t GetPriority() const noexcept { return m_priority; };
+
   private:
     bool LoadLib();
 
   private:
-    bool m_hasLib;
+    bool m_hasLib{};
     bool m_libInited{};
     bool m_enabled{};
     std::filesystem::path m_modPath;
-    std::string m_modName;
-    std::string m_libName;
+    std::string m_modName{};
+    std::string m_libName{};
     bool m_luaInit{};
+    int64_t m_priority;
 
     IModInterface m_interface{};
 };

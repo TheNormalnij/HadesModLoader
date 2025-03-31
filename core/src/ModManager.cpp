@@ -55,7 +55,15 @@ void ModManager::ScanMods() {
             m_Mods.emplace_back(std::move(mod));
     }
 
+    SortMods();
+
     for (auto &mod : m_Mods) {
         mod->Start();
     }
+}
+
+void ModManager::SortMods() {
+    std::sort(m_Mods.begin(), m_Mods.end(), [](const std::unique_ptr<Mod> &a, const std::unique_ptr<Mod> &b) {
+        return a->GetPriority() > b->GetPriority();
+    });
 }
