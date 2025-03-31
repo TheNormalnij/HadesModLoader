@@ -70,11 +70,12 @@ static uint64_t __fastcall loadBufferHook(void* rdx, const char* buffer, size_t 
 void HooksSystem::PathBufferNames() {
     // mov rcx, address
     // call rcx
-    std::string path{"\x48\xB9\xFF\xFF\xFF\xFF\x00\xCC\xBB\xAA\xFF\xD1", 12};
+    uint8_t path[] = {0x48, 0xB9, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xCC, 0xBB, 0xAA, 0xFF, 0xD1};
 
-    auto *address = reinterpret_cast<uintptr_t *>(&path.at(2));
+    auto *address = reinterpret_cast<uintptr_t *>(&path[2]);
     *address = reinterpret_cast<uintptr_t>(&loadBufferHook);
-    Mem::MemCpyUnsafe((void*)m_HookTable.ScriptManager_Load_path, (void*)path.c_str(), 12);
+
+    Mem::MemCpyUnsafe((void *)m_HookTable.ScriptManager_Load_path, (void *)path, sizeof(path));
 }
 
 void HooksSystem::SetLuaLoadCallback(std::function<void()> callback) {
