@@ -55,7 +55,7 @@ static bool InjectModDll(PROCESS_INFORMATION& pi, std::string_view dllName) {
     return true;
 }
 
-static bool startSteamGame() {
+static bool startSteamGame(const char* arguments) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
 
@@ -63,8 +63,11 @@ static bool startSteamGame() {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
+    std::string cmdLine{"Hades.exe "};
+    cmdLine.append(arguments);
+
     if (!CreateProcess(nullptr,                   // No module name (use command line)
-                       (LPSTR) "Hades.exe",  // Command line
+                       cmdLine.data(),            // Command line
                        NULL,                      // Process handle not inheritable
                        NULL,                      // Thread handle not inheritable
                        FALSE,                     // Set handle inheritance to FALSE
@@ -91,7 +94,7 @@ static bool startSteamGame() {
 }
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow) {
-    if (!startSteamGame()) {
+    if (!startSteamGame(cmdline)) {
         MessageBoxA(nullptr, "Cannot start the game", "Fail", MB_OK);
         return 1;
     }
