@@ -10,16 +10,16 @@ class lua_State;
 
 class HooksSystem {
   public:
-    void SetLuaLoadCallback(std::function<void()> callback);
+    void SetLuaLoadCallback(std::function<void()> callback) { LuaLoadCb = callback; };
     const HookTable &GetHoohTable() const noexcept { return m_HookTable; };
     uint64_t GetGameDllOffset() const noexcept { return m_GameDllOffset; };
     static HooksSystem *Instance();
 
   private:
     HooksSystem();
-    void PathBufferNames();
 
   private:
+    static std::function<void()> LuaLoadCb;
     HookTable m_HookTable{};
     uint64_t m_GameDllOffset{};
 };

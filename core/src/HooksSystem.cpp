@@ -4,52 +4,15 @@
 //
 
 #include "pch.h"
+
 #include "HooksSystem.h"
-#include "detours.h"
-#include "Mem.h"
-#include "LuaManager.h"
 #include "ModApi.h"
+#include "hooks/LoadBufferHook.h"
+#include "hooks/CreateFileHook.h"
 
 static HooksSystem* gHooksInstance;
 
-static std::function<void()> gLuaLoadCb{};
-
-typedef HANDLE(WINAPI *CreateFileW_t)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
-                                      LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
-                                      DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
-
-CreateFileW_t OriginalCreateFileW = NULL;
-
-static void RemoveCreateFileHook();
-
-HANDLE WINAPI HookedCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
-                                LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
-                                DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
-
-    if (gLuaLoadCb && std::wstring_view(lpFileName).ends_with(L"Content\\Scripts\\Main.lua")) {
-        // The game resets lua state before loading a save
-        // We need register our functions again when the game do that
-        gLuaLoadCb();
-    }
-
-    return OriginalCreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
-                               dwFlagsAndAttributes, hTemplateFile);
-}
-
-static void CreateFileHook() {
-    OriginalCreateFileW = (CreateFileW_t)DetourFindFunction("kernel32.dll", "CreateFileW");
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(&(PVOID &)OriginalCreateFileW, HookedCreateFileW);
-    DetourTransactionCommit();
-}
-
-static void RemoveCreateFileHook() {
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourDetach(&(PVOID &)OriginalCreateFileW, HookedCreateFileW);
-    DetourTransactionCommit();
-}
+std::function<void()> HooksSystem::LuaLoadCb{};
 
 HooksSystem::HooksSystem() {
     struct LibToGameVariant {
@@ -76,31 +39,16 @@ HooksSystem::HooksSystem() {
 
     m_HookTable.Init();
     m_HookTable.ApplyOffset(m_GameDllOffset);
-    PathBufferNames();
-}
 
-static uint64_t __fastcall loadBufferHook(void* rdx, const char* buffer, size_t size, const char* name,
-    const char* mode) {
-    std::string newName{"@Content/Scripts/"};
-    newName = newName + name + ".lua";
+    Hooks::LoadBufferHook::Install((void *)m_HookTable.ScriptManager_Load_path);
 
-    return LuaManager::luaL_loadbufferx(LuaManager::GetLuaState(), buffer, size, newName.c_str(), mode);
-}
-
-void HooksSystem::PathBufferNames() {
-    // mov rcx, address
-    // call rcx
-    uint8_t path[] = {0x48, 0xB9, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xCC, 0xBB, 0xAA, 0xFF, 0xD1};
-
-    auto *address = reinterpret_cast<uintptr_t *>(&path[2]);
-    *address = reinterpret_cast<uintptr_t>(&loadBufferHook);
-
-    Mem::MemCpyUnsafe((void *)m_HookTable.ScriptManager_Load_path, (void *)path, sizeof(path));
-}
-
-void HooksSystem::SetLuaLoadCallback(std::function<void()> callback) {
-    gLuaLoadCb = callback;
-    CreateFileHook();
+    // The game resets lua state before loading a save
+    // We need register our functions again when the game do that
+    Hooks::CreateFileHook::Install([](const wchar_t *fileName) {
+        if (LuaLoadCb && std::wstring_view(fileName).ends_with(L"Content\\Scripts\\Main.lua")) {
+            LuaLoadCb();
+        }
+    });
 }
 
 HooksSystem *HooksSystem::Instance() { 
