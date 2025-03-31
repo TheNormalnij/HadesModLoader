@@ -8,6 +8,7 @@
 #include "detours.h"
 #include "Mem.h"
 #include "LuaManager.h"
+#include "ModApi.h"
 
 static HooksSystem* gHooksInstance;
 
@@ -25,7 +26,7 @@ HANDLE WINAPI HookedCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD
                                 LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
                                 DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
 
-    if (gLuaLoadCb && std::wstring(lpFileName).ends_with(L"Content\\Scripts\\Main.lua")) {
+    if (gLuaLoadCb && std::wstring_view(lpFileName).ends_with(L"Content\\Scripts\\Main.lua")) {
         // The game resets lua state before loading a save
         // We need register our functions again when the game do that
         gLuaLoadCb();
@@ -50,8 +51,27 @@ static void RemoveCreateFileHook() {
     DetourTransactionCommit();
 }
 
-HooksSystem::HooksSystem() { 
-    HANDLE libraryHandle = LoadLibraryA("EngineWin64sv.dll");
+HooksSystem::HooksSystem() {
+    struct LibToGameVariant {
+        const char *name;
+        eGameVariant variant;
+    };
+
+    const LibToGameVariant librarires[2] = {{"EngineWin64sv.dll", eGameVariant::VULKAN},
+                                            {"EngineWin64s.dll", eGameVariant::DX12}};
+
+    HANDLE libraryHandle = 0;
+    for (size_t i = 0; i < 2; i++) {
+        libraryHandle = LoadLibraryA(librarires[i].name);
+        if (libraryHandle) {
+            gModApi.gameVariant = librarires[i].variant;
+            break;
+        }
+    }
+
+    if (!libraryHandle)
+        return;
+
     m_GameDllOffset = reinterpret_cast<uint64_t>(libraryHandle);
 
     m_HookTable.Init();

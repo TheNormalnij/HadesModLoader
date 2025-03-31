@@ -12,6 +12,7 @@
 #define MOD_API_VERSION 1
 
 enum class eGameVariant: uint8_t {
+    UNKNOWN,
     VULKAN,
     DX12,
     x86,

@@ -8,4 +8,4 @@
 
 static uint64_t GetGameDllOffset() { return HooksSystem::Instance()->GetGameDllOffset(); }
 
-IModApi gModApi{.version{MOD_API_VERSION}, .gameVariant{eGameVariant::VULKAN}, .GetGameDllOffset = GetGameDllOffset};
+IModApi gModApi{.version{MOD_API_VERSION}, .gameVariant{eGameVariant::UNKNOWN}, .GetGameDllOffset = GetGameDllOffset};
