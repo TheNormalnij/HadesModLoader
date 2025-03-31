@@ -44,6 +44,10 @@ bool Mod::Load() {
     if (!parser.read("Priority", m_priority))
         m_priority = 0;
 
+    // unused
+    StringView mouAuthor;
+    parser.read("Author", modName);
+
     parser.object_ends();
 
     return true;
