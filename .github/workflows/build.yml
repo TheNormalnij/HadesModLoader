@@ -18,7 +18,7 @@ jobs:
     - name: Compile with MSVC for Windows
       run: |
         cmake -A ${{ matrix.arch }} . -B build_msvc
-        cmake --build build_msvc --config ${{ matrix.build_type }}
+        cmake --build build_msvc --target install --config ${{ matrix.build_type }}
       shell: bash
     - name: Store artifacts
       uses: actions/upload-artifact@v4
@@ -27,3 +27,4 @@ jobs:
         path: |
           ${{ github.workspace }}\bin\HadesModCore.dll
           ${{ github.workspace }}\bin\HadesModdedLauncher.exe
+          ${{ github.workspace }}\bin\Xinput9_1_0.dll

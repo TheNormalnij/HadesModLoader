@@ -8,18 +8,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(MODLOADER_DEDICATED_LAUNCHER "Build dedicated launcher" OFF)
 option(MODLOADER_DLL_HOOK_LAUNCHER "Build dll hook launcher" ON)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/bin)
-
 add_subdirectory(libs/lua-5.2.2)
 add_subdirectory(libs/libdetours)
 
+set(MOD_LOADER_INSTALL_LIST HadesModCore)
+
 if(${MODLOADER_DEDICATED_LAUNCHER})
 add_subdirectory(launcher)
+list(APPEND MOD_LOADER_INSTALL_LIST HadesModdedLauncher)
+#set(MOD_LOADER_INSTALL_LIST ${MOD_LOADER_INSTALL_LIST} HadesModdedLauncher)
 endif()
 
 if(${MODLOADER_DLL_HOOK_LAUNCHER})
 add_subdirectory(loader-dllhook)
+list(APPEND MOD_LOADER_INSTALL_LIST HadesModLoaderDllHook)
+#set(MOD_LOADER_INSTALL_LIST ${MOD_LOADER_INSTALL_LIST} HadesModLoaderDllHook)
 endif()
 
 add_subdirectory(core)
+
+install(TARGETS ${MOD_LOADER_INSTALL_LIST}
+        RUNTIME
+        DESTINATION ${CMAKE_SOURCE_DIR}/bin
+)
