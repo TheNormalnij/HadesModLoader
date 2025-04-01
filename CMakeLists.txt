@@ -16,13 +16,11 @@ set(MOD_LOADER_INSTALL_LIST HadesModCore)
 if(${MODLOADER_DEDICATED_LAUNCHER})
 add_subdirectory(launcher)
 list(APPEND MOD_LOADER_INSTALL_LIST HadesModdedLauncher)
-#set(MOD_LOADER_INSTALL_LIST ${MOD_LOADER_INSTALL_LIST} HadesModdedLauncher)
 endif()
 
 if(${MODLOADER_DLL_HOOK_LAUNCHER})
 add_subdirectory(loader-dllhook)
 list(APPEND MOD_LOADER_INSTALL_LIST HadesModLoaderDllHook)
-#set(MOD_LOADER_INSTALL_LIST ${MOD_LOADER_INSTALL_LIST} HadesModLoaderDllHook)
 endif()
 
 add_subdirectory(core)
