@@ -7,7 +7,6 @@
 
 #include "HooksSystem.h"
 
-#include <algorithm>
 #include "ModApi.h"
 #include "hooks/LoadBufferHook.h"
 #include "hooks/CreateFileHook.h"
