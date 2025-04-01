@@ -9,8 +9,4 @@ struct HookTable {
     uintptr_t luaState;
     uintptr_t lua_pcallk;
     uintptr_t luaL_loadbufferx;
-    uintptr_t ScriptManager_Load_path;
-
-    void ApplyOffset(uintptr_t offset);
-    void Init();
 };

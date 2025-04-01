@@ -6,27 +6,29 @@
 #include "pch.h"
 
 #include "HooksSystem.h"
+
+#include <algorithm>
 #include "ModApi.h"
 #include "hooks/LoadBufferHook.h"
 #include "hooks/CreateFileHook.h"
+
+const struct {
+    const char *name;
+    eGameVariant variant;
+} librarires[2] = {{"EngineWin64sv.dll", eGameVariant::VULKAN}, {"EngineWin64s.dll", eGameVariant::DX12}};
 
 static HooksSystem* gHooksInstance;
 
 std::function<void()> HooksSystem::LuaLoadCb{};
 
 HooksSystem::HooksSystem() {
-    struct LibToGameVariant {
-        const char *name;
-        eGameVariant variant;
-    };
-
-    const LibToGameVariant librarires[2] = {{"EngineWin64sv.dll", eGameVariant::VULKAN},
-                                            {"EngineWin64s.dll", eGameVariant::DX12}};
+    size_t libraryVariant = 0;
 
     HANDLE libraryHandle = 0;
     for (size_t i = 0; i < 2; i++) {
         libraryHandle = LoadLibraryA(librarires[i].name);
         if (libraryHandle) {
+            libraryVariant = i;
             gModApi.gameVariant = librarires[i].variant;
             break;
         }
@@ -35,12 +37,14 @@ HooksSystem::HooksSystem() {
     if (!libraryHandle)
         return;
 
-    m_GameDllOffset = reinterpret_cast<uint64_t>(libraryHandle);
+    m_GameDllHandle = libraryHandle;
 
-    m_HookTable.Init();
-    m_HookTable.ApplyOffset(m_GameDllOffset);
+    m_symLoader.Initialize();
+    m_symLoader.LoadModuleSymbols(libraryHandle, librarires[libraryVariant].name);
 
-    Hooks::LoadBufferHook::Install((void *)m_HookTable.ScriptManager_Load_path);
+    InitHookTable();
+
+    Hooks::LoadBufferHook::Install(m_symLoader, m_HookTable.luaL_loadbufferx);
 
     // The game resets lua state before loading a save
     // We need register our functions again when the game do that
@@ -49,6 +53,12 @@ HooksSystem::HooksSystem() {
             LuaLoadCb();
         }
     });
+}
+
+void HooksSystem::InitHookTable() {
+    m_HookTable.luaState = m_symLoader.GetSymbolAddress("sgg::ScriptManager::LUA_INTERFACE");
+    m_HookTable.lua_pcallk = m_symLoader.GetSymbolAddress("lua_pcallk");
+    m_HookTable.luaL_loadbufferx = m_symLoader.GetSymbolAddress("luaL_loadbufferx");
 }
 
 HooksSystem *HooksSystem::Instance() { 

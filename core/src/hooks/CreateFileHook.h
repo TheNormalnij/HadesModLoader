@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
 
+#pragma once
+
 #include <functional>
 
 namespace Hooks::CreateFileHook {

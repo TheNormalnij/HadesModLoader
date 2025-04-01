@@ -6,6 +6,18 @@
 #include "include/HadesModApi.h"
 #include "HooksSystem.h"
 
-static uint64_t GetGameDllOffset() { return HooksSystem::Instance()->GetGameDllOffset(); }
+static void *GetGameDll() { return HooksSystem::Instance()->GetGameDllHandle(); }
 
-IModApi gModApi{.version{MOD_API_VERSION}, .gameVariant{eGameVariant::UNKNOWN}, .GetGameDllOffset = GetGameDllOffset};
+static uint64_t GetSymbolAddress(const char *symbolName) {
+    return HooksSystem::Instance()->GetSymbolLoader().GetSymbolAddress(symbolName);
+}
+
+static bool LoadDllSymbols(void *handle, const char *dllName) {
+    return HooksSystem::Instance()->GetSymbolLoader().LoadModuleSymbols(handle, dllName);
+}
+
+IModApi gModApi{.version{MOD_API_VERSION},
+                .gameVariant{eGameVariant::UNKNOWN},
+                .GetGameDll = GetGameDll,
+                .GetSymbolAddress = GetSymbolAddress,
+                .LoadDllSymbols = LoadDllSymbols};

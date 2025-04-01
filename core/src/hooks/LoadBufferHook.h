@@ -3,6 +3,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
 
+#pragma once
+
+#include "SymbolLoader.h"
+
 namespace Hooks::LoadBufferHook {
-void Install(void* pos);
+void Install(SymbolLoader &symLoader, uintptr_t luaL_loadbufferxPos);
 }
