@@ -1,12 +1,12 @@
 add_library(HadesModCore SHARED)
 
-add_definitions(-DHADES_MOD_LOADER)
+add_definitions(-DHADES_MOD_LOADER -DNOMINMAX)
 
 include_directories (
    src/.
    ../libs/lua-5.2.2/src
    ../libs/libdetours/Detours/src
-   ../libs/sjson/includes
+   ../libs/json
 )
 
 file(GLOB_RECURSE HADES_MOD_CORE_FILES src/*.cpp src/*.h)

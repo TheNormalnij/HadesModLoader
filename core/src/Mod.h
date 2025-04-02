@@ -45,7 +45,7 @@ class Mod {
     std::string m_modName{};
     std::string m_libName{};
     bool m_luaInit{};
-    int64_t m_priority;
+    int64_t m_priority{};
 
     IModInterface m_interface{};
 };

@@ -6,13 +6,12 @@
 #include "Mod.h"
 #include "LuaManager.h"
 #include "ModApi.h"
-#include <sjson/parser.h>
+#include <json.h>
 #include <fstream>
 
 namespace fs = std::filesystem;
 
 bool Mod::Load() {
-    using namespace sjson;
     const auto metaPath = m_modPath / "meta.sjson";
 
     std::ifstream file(metaPath);
@@ -23,32 +22,27 @@ bool Mod::Load() {
     std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
 
-    Parser parser{buffer.data(), buffer.size()};
+    constexpr size_t MAX_SJSON_TOKENS = 100;
+    json_token_t tokens[MAX_SJSON_TOKENS]{};
 
-    if (!parser.is_valid())
+    const size_t tokensCount = sjson_parse(buffer.data(), buffer.size(), tokens, MAX_SJSON_TOKENS);
+
+    for (size_t tokenId = 0; tokenId < std::min(tokensCount, MAX_SJSON_TOKENS); tokenId++) {
+        const auto& token = tokens[tokenId];
+        std::string_view key{&buffer.at(token.id), token.id_length};
+        if (token.type == json_type_t::JSON_PRIMITIVE && key == "Priority") {
+            m_priority = std::stoi(std::string{&buffer.at(token.value), token.value_length});
+        } else if (token.type == json_type_t::JSON_STRING) {
+            if (key == "Name") {
+                m_modName = std::string{&buffer.at(token.value), token.value_length};
+            } else if (key == "Library") {
+                m_libName = std::string{&buffer.at(token.value), token.value_length};
+            }
+        }
+    }
+
+    if (m_modName.empty())
         return false;
-
-    if (!parser.object_begins())
-        return false;
-
-    StringView modName;
-    if (!parser.read("Name", modName))
-        return false;
-
-    m_modName = {modName.c_str(), modName.size()};
-
-    StringView modLib;
-    if (parser.read("Library", modLib))
-        m_libName = {modLib.c_str(), modLib.size()};
-
-    if (!parser.read("Priority", m_priority))
-        m_priority = 0;
-
-    // unused
-    StringView mouAuthor;
-    parser.read("Author", modName);
-
-    parser.object_ends();
 
     return true;
 }
