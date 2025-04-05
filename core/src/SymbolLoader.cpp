@@ -19,7 +19,7 @@ bool SymbolLoader::Initialize() {
     SymFromName = (decltype(SymFromName))GetProcAddress(dbgHelper, "SymFromName");
     SymLoadModuleEx = (decltype(SymLoadModuleEx))GetProcAddress(dbgHelper, "SymLoadModuleEx");
 
-    SymSetOptions(SYMOPT_UNDNAME | SYMOPT_LOAD_ANYTHING | SYMOPT_DEFERRED_LOADS);
+    SymSetOptions(SYMOPT_DEFERRED_LOADS);
     return SymInitialize(GetCurrentProcess(), nullptr, FALSE) != 0;
 }
 
