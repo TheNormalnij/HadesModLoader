@@ -11,7 +11,7 @@ class SymbolLoader {
   public:
     SymbolLoader() {};
 
-    uintptr_t GetSymbolAddress(const char *sym);
+    uintptr_t GetSymbolAddress(const char *sym) const noexcept;
 
     bool Initialize();
     bool LoadModuleSymbols(HANDLE handle, const char *dllPath);

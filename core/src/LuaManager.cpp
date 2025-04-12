@@ -7,6 +7,7 @@
 #include "LuaManager.h"
 #include "HooksSystem.h"
 #include "lua/ModLuaDefs.h"
+#include "lua/TempValuesLuaDefs.h"
 #include <fstream>
 #include <filesystem>
 
@@ -19,6 +20,7 @@ const static fs::path gamePath = fs::current_path().parent_path();
 void LuaManager::Reinit() {
     lua_State *luaState = GetLuaState();
     ModLuaDefs::Load(luaState);
+    TempValuesLuaDefs::Load(luaState);
 }
 
 bool LuaManager::DoScriptFile(const std::filesystem::path &path) {

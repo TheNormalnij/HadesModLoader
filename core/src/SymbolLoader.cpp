@@ -23,7 +23,7 @@ bool SymbolLoader::Initialize() {
     return SymInitialize(GetCurrentProcess(), nullptr, FALSE) != 0;
 }
 
-uintptr_t SymbolLoader::GetSymbolAddress(const char *name) {
+uintptr_t SymbolLoader::GetSymbolAddress(const char *name) const noexcept {
     SYMBOL_INFO_PACKAGE symbolInfo = {0};
     symbolInfo.si.SizeOfStruct = sizeof(SYMBOL_INFO);
     symbolInfo.si.MaxNameLen = MAX_SYM_NAME;
