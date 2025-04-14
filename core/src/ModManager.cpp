@@ -38,7 +38,7 @@ void ModManager::ScanMods() {
     using path = fs::path;
 
     auto gamePath = fs::current_path().parent_path();
-    auto modPath = gamePath / "Content" / "ModModules";
+    auto modPath = gamePath / "Content" / "Mods";
 
     if (!fs::is_directory(modPath)) {
         fs::create_directory(modPath);

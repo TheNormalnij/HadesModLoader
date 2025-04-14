@@ -16,4 +16,4 @@ Binary files are located in the `bin` folder.
 
 # Installation
 
-Copy files from the `bin` folder to the `Hades/x64Vk` or `Hades/x64` folder, depending on the used game version
+Copy files from the `bin` folder to the `Hades/x64Vk` or `Hades/x64` folder, depending on the used game version.
