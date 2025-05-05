@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(MODLOADER_DEDICATED_LAUNCHER "Build dedicated launcher" OFF)
 option(MODLOADER_DLL_HOOK_LAUNCHER "Build dll hook launcher" ON)
 
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 add_subdirectory(libs/lua-5.2.2)
 add_subdirectory(libs/libdetours)
 
