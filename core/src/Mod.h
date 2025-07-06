@@ -46,6 +46,7 @@ class Mod {
     std::string m_libName{};
     bool m_luaInit{};
     int64_t m_priority{};
+    std::vector<std::string> m_localizations;
 
     IModInterface m_interface{};
 };

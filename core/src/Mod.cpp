@@ -6,7 +6,7 @@
 #include "Mod.h"
 #include "LuaManager.h"
 #include "ModApi.h"
-#include <json.h>
+#include "ModMetaParser.h"
 #include <fstream>
 
 namespace fs = std::filesystem;
@@ -22,24 +22,14 @@ bool Mod::Load() {
     std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
 
-    constexpr size_t MAX_SJSON_TOKENS = 100;
-    json_token_t tokens[MAX_SJSON_TOKENS]{};
+    ModMetaParser parser{};
+    if (!parser.Parse(buffer.data(), buffer.size()))
+        return false;
 
-    const size_t tokensCount = sjson_parse(buffer.data(), buffer.size(), tokens, MAX_SJSON_TOKENS);
-
-    for (size_t tokenId = 0; tokenId < std::min(tokensCount, MAX_SJSON_TOKENS); tokenId++) {
-        const auto& token = tokens[tokenId];
-        std::string_view key{&buffer.at(token.id), token.id_length};
-        if (token.type == json_type_t::JSON_PRIMITIVE && key == "Priority") {
-            m_priority = std::stoi(std::string{&buffer.at(token.value), token.value_length});
-        } else if (token.type == json_type_t::JSON_STRING) {
-            if (key == "Name") {
-                m_modName = std::string{&buffer.at(token.value), token.value_length};
-            } else if (key == "Library") {
-                m_libName = std::string{&buffer.at(token.value), token.value_length};
-            }
-        }
-    }
+    m_modName = std::move(parser.name);
+    m_libName = std::move(parser.libName);
+    m_priority = parser.priority;
+    m_localizations.swap(parser.localizations);
 
     if (m_modName.empty())
         return false;
