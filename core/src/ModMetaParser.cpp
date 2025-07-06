@@ -44,7 +44,7 @@ bool ModMetaParser::Parse(const char *data, size_t size) {
             break;
         }
         case JSON_ARRAY: {
-            if (key == "Localizatioins") {
+            if (key == "Localization") {
                 const size_t childsCount = token.value_length;
                 localizations.reserve(childsCount);
 
