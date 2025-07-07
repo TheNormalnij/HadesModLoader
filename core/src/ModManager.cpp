@@ -10,6 +10,7 @@
 #include "HooksSystem.h"
 #include "lua/ModLuaDefs.h"
 #include "LuaManager.h"
+#include "hooks/LocalizationHook.h"
 
 static ModManager gModCore{}; 
 
@@ -51,8 +52,13 @@ void ModManager::ScanMods() {
          
         auto mod = std::make_unique<Mod>(modDir);
 
-        if (mod->Load())
+        if (mod->Load()) {
+            for (const auto &localPath : mod->GetLocalization()) {
+                const path fullPath = modDir.path().filename() / localPath;
+                Hooks::LocalizationHook::AddLocalizationPath(std::move(fullPath.string()));
+            }
             m_Mods.emplace_back(std::move(mod));
+        }
     }
 
     SortMods();

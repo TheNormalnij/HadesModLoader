@@ -33,6 +33,7 @@ class Mod {
     bool Stop();
 
     int64_t GetPriority() const noexcept { return m_priority; };
+    auto &GetLocalization() const noexcept { return m_localizations; };
 
   private:
     bool LoadLib();

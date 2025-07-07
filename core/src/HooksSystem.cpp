@@ -8,15 +8,16 @@
 #include "HooksSystem.h"
 
 #include "ModApi.h"
-#include "hooks/LoadBufferHook.h"
 #include "hooks/CreateFileHook.h"
+#include "hooks/LoadBufferHook.h"
+#include "hooks/LocalizationHook.h"
 
 const struct {
     const char *name;
     eGameVariant variant;
 } librarires[2] = {{"EngineWin64sv.dll", eGameVariant::VULKAN}, {"EngineWin64s.dll", eGameVariant::DX12}};
 
-static HooksSystem* gHooksInstance;
+static HooksSystem *gHooksInstance;
 
 std::function<void()> HooksSystem::LuaLoadCb{};
 
@@ -52,6 +53,8 @@ HooksSystem::HooksSystem() {
             LuaLoadCb();
         }
     });
+
+    Hooks::LocalizationHook::Install(m_symLoader);
 }
 
 void HooksSystem::InitHookTable() {
@@ -60,7 +63,7 @@ void HooksSystem::InitHookTable() {
     m_HookTable.luaL_loadbufferx = m_symLoader.GetSymbolAddress("luaL_loadbufferx");
 }
 
-HooksSystem *HooksSystem::Instance() { 
+HooksSystem *HooksSystem::Instance() {
     if (!gHooksInstance)
         gHooksInstance = new HooksSystem();
 
