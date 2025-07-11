@@ -17,7 +17,7 @@ jobs:
 
     - name: Compile with MSVC for Windows
       run: |
-        cmake -A ${{ matrix.arch }} . -B build_msvc -DCMAKE_POLICY_VERSION_MINIMUM=3.20
+        cmake -A ${{ matrix.arch }} . -B build_msvc -DCMAKE_POLICY_VERSION_MINIMUM=3.20 -DMODLOADER_DEDICATED_LAUNCHER=ON
         cmake --build build_msvc --target install --config ${{ matrix.build_type }}
       shell: bash
     - name: Store artifacts
